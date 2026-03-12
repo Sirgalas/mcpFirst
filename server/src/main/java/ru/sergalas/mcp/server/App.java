@@ -1,13 +1,18 @@
 package ru.sergalas.mcp.server;
 
-/**
- * Hello world!
- *
- */
-public class App 
+import io.modelcontextprotocol.server.McpServer;
+import io.modelcontextprotocol.server.McpSyncServer;
+import io.modelcontextprotocol.server.transport.HttpServletStreamableServerTransportProvider;
+
+public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
+        System.out.println( "Start server" );
+        HttpServletStreamableServerTransportProvider transportProvider = HttpServletStreamableServerTransportProvider
+                .builder()
+                .mcpEndpoint("/mcp")
+                .build();
+        McpServer.sync(transportProvider).build();
     }
 }
