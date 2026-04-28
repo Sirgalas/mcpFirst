@@ -17,6 +17,7 @@
         <lombok.version>1.18.42</lombok.version>
         <jetty.version>12.1.7</jetty.version>
         <spring-ai-mcp.version>2.0.0-M2</spring-ai-mcp.version>
+        <jackson.version>2.18.3</jackson.version>
     </properties>
 
     <repositories>
@@ -28,6 +29,32 @@
     </repositories>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jsonSchema</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
         <!-- Spring AI MCP Server -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
@@ -54,6 +81,7 @@
             <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
+
     </dependencies>
 
     <build>
