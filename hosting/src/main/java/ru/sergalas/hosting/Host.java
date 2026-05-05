@@ -1,16 +1,19 @@
 package ru.sergalas.hosting;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
 import io.modelcontextprotocol.spec.McpSchema;
 import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.sergalas.hosting.util.CallToolUtil;
+
+import java.util.List;
 
 @Service
 public class Host {
@@ -32,9 +35,21 @@ public class Host {
     }
 
 
-    public void printAnswerToUser(String question){
+    public void printAnswerToUser(String question) throws JsonProcessingException {
         AssistantMessage assistantMessage = chatClient.prompt().system(systemPrompt).user(question).call().chatResponse().getResult().getOutput();
-        if(CallToolUtil.isToolRequired(assistantMessage.getText())){}
+        if(CallToolUtil.isToolRequired(assistantMessage.getText())){
+            McpSchema.CallToolRequest toolResult = CallToolUtil.getRequiredTool(assistantMessage.getText());
+
+            String toolResponse = CallToolUtil.wrapResponse(client.callTool(toolResult).content().getFirst().toString());
+
+            UserMessage toolMessage = new UserMessage(toolResponse);
+            UserMessage userMessage = new UserMessage(question);
+
+            assistantMessage = chatClient.prompt().system(systemPrompt).messages(List.of(userMessage,assistantMessage,toolMessage)).call().chatResponse().getResult().getOutput();
+
+        }
+
+        System.out.println(assistantMessage.getText());
 
     }
 }
