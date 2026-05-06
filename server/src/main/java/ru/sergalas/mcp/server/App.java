@@ -1,6 +1,7 @@
 package ru.sergalas.mcp.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.modelcontextprotocol.json.jackson.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -30,9 +31,15 @@ public class App
                 .build();
 
         McpServerFeatures.SyncToolSpecification bioSensorToolSpec = McpServerFeatures.SyncToolSpecification.builder()
-                .tool(bioSensorTool)
-                .callHandler((mcpSyncServerExchange, callToolRequest) -> new McpSchema.CallToolResult("пульс пользователя 42", false))
-                .build();
+            .tool(bioSensorTool)
+            .callHandler(
+                (mcpSyncServerExchange, callToolRequest) ->
+                {
+                    String days = callToolRequest.arguments().get("days").toString();
+                    return new McpSchema.CallToolResult("пульс пользователя за последних %s дня, был 42 удара в минуту".formatted(days), false);
+                }
+            )
+            .build();
 
         McpServer
                 .sync(transportProvider)
@@ -53,7 +60,15 @@ public class App
     }
 
     private static String createBioSensorShema() {
-        return new ObjectMapper().createObjectNode().put("type", "object").toString();
+        ObjectNode rootNode = new ObjectMapper().createObjectNode().put("type", "object");
+        rootNode
+            .putObject("properties")
+            .putObject("days")
+            .put("type","integer")
+            .put("description","Number of past day to include in the pulse reading request")
+            .putArray("required")
+                .add("days");
+        return rootNode.toString();
     }
 
     private static McpSchema.ServerCapabilities createServerCapabilities() {

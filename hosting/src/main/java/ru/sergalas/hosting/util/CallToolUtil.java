@@ -1,6 +1,7 @@
 package ru.sergalas.hosting.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -31,12 +32,14 @@ public class CallToolUtil {
         String toolCallRequestJson = matcher.group(1).trim();
         JsonNode tool = objectMapper.readTree(toolCallRequestJson);
         String toolName = tool.path("name").asText();
-        
+        JsonNode parameters = tool.path("parameters");
+
+
         McpSchema.CallToolRequest.Builder builder = McpSchema.CallToolRequest.builder().name(toolName);
         
         JsonNode parametersNode = tool.path("parameters");
         if (!parametersNode.isMissingNode() && !parametersNode.isNull()) {
-            Map<String, Object> arguments = objectMapper.convertValue(parametersNode, Map.class);
+            Map<String, Object> arguments = objectMapper.convertValue(parameters, new TypeReference<>() {});
             builder.arguments(arguments);
         }
         
