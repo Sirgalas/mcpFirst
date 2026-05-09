@@ -40,7 +40,7 @@ public class CallToolUtil {
         JsonNode parametersNode = tool.path("parameters");
         if (!parametersNode.isMissingNode() && !parametersNode.isNull()) {
             Map<String, Object> arguments = objectMapper.convertValue(parameters, new TypeReference<>() {});
-            builder.arguments(arguments);
+            builder.arguments(objectMapper.convertValue(arguments, Map.class));
         }
         
         return builder.build();

@@ -12,6 +12,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;  // ✅ С ee10!
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class App
 {
     @SneakyThrows
@@ -27,7 +30,8 @@ public class App
                 .name("bioSensor")
                 .title("Human Virtual Bio Sensor")
                 .description("Retrieves and analyzes real-time or historical biometric sensor data (e.g., heart rate, body temperature, SpO2, stress index). Supports filtering by device ID, time range, and specific physiological metrics. Returns structured readings suitable for monitoring, alerting, or clinical/analytics pipelines.")
-                .inputSchema(new JacksonMcpJsonMapper(new ObjectMapper()), createBioSensorShema())
+                .inputSchema(new JacksonMcpJsonMapper(new ObjectMapper()), createBioSensorInputSchema())
+                .outputSchema(new JacksonMcpJsonMapper(new ObjectMapper()), createBioSensorOutputSchema())
                 .build();
 
         McpServerFeatures.SyncToolSpecification bioSensorToolSpec = McpServerFeatures.SyncToolSpecification.builder()
@@ -35,9 +39,15 @@ public class App
             .callHandler(
                 (mcpSyncServerExchange, callToolRequest) ->
                 {
-                    String days = callToolRequest.arguments().get("days").toString();
-                    return new McpSchema.CallToolResult("пульс пользователя за последних %s дня, был 42 удара в минуту".formatted(days), false);
-                }
+                    String serverLogMessage = "Ответ от сервера %s".formatted(callToolRequest.toString());
+                    mcpSyncServerExchange.loggingNotification(
+                            McpSchema.LoggingMessageNotification
+                                .builder()
+                                .data(serverLogMessage)
+                                .build()
+                        );
+                    Integer days = (Integer) callToolRequest.arguments().get("days");
+                    return resultAnswer(days);                }
             )
             .build();
 
@@ -59,7 +69,35 @@ public class App
         server.join();
     }
 
-    private static String createBioSensorShema() {
+    private static McpSchema.CallToolResult resultAnswer(Integer days) {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("pulse","пульс пользователя за последних %s дня, был 42 удара в минуту".formatted(days));
+        properties.put("state", "Все в порядке");
+        properties.put("sleepDeprivation",true);
+
+        return McpSchema.CallToolResult.builder()
+                .structuredContent(properties)
+                .build();
+    }
+
+    private static String createBioSensorOutputSchema() {
+        ObjectNode rootNode = new ObjectMapper().createObjectNode().put("type", "object");
+        ObjectNode properties = rootNode.putObject("properties");
+        properties.putObject("pulse")
+                .put("type", "string")
+                .put("description","average pulse rate for last days");
+        properties.putObject("state")
+                .put("type", "string")
+                .put("description","what state of user");
+        properties.putObject("sleepDeprivation")
+                .put("type", "boolean")
+                .put("description","sleep deprivation yes or no");
+
+        return rootNode.toString();
+    }
+
+    private static String createBioSensorInputSchema() {
         ObjectNode rootNode = new ObjectMapper().createObjectNode().put("type", "object");
         rootNode
             .putObject("properties")

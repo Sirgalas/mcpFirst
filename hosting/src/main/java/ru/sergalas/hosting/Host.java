@@ -28,7 +28,10 @@ public class Host {
     @PostConstruct
     public void init() {
         HttpClientStreamableHttpTransport transport = HttpClientStreamableHttpTransport.builder("http://localhost:8091").endpoint("mcp").build();
-        client = McpClient.sync(transport).build();
+        client = McpClient
+                .sync(transport)
+                .loggingConsumer(loggingMessageNotification -> System.out.println(loggingMessageNotification.data()) )
+                .build();
         client.initialize();
         McpSchema.ListToolsResult toolsResult = client.listTools();
         systemPrompt = SystemPromptFactory.withTools(toolsResult);

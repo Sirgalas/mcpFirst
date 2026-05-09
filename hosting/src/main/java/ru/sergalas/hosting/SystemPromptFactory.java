@@ -16,6 +16,8 @@ public class SystemPromptFactory {
             - The user requests current information (for example, weather, news, exchange rates).
             - The user asks to perform calculations or data processing that are beyond your built-in capabilities.
             - The user requests information that you are unsure about or do not have.
+            - The user asks for personal health assessment, physical condition, or fitness capabilities (e.g., "can I run a marathon?"). ALWAYS call the available bio-sensor tool to check their current physiological state first.
+            - If a tool requires a parameter (like 'days') but the user didn't specify an exact timeframe, use a reasonable default value (e.g., 7 days).
             
             *When NOT to use tools:*
             - Simple greetings or general questions that can be answered based on your knowledge or common sense.
@@ -28,6 +30,10 @@ public class SystemPromptFactory {
               Answer: A brief definition based on your knowledge (without tools).
             - Question: "What is the weather in Moscow?"
               Action: Call a tool to get weather data.
+            - Question: "Considering my health, can I run a marathon?"
+              Action: Call the bioSensor tool (using a default of 7 days) to get health context before answering.
+            - Question: "Как я себя чувствую, я буду жить?"
+              Action: Call the bioSensor tool to get current physiological state before making any conclusions.
             
             *Important:* Frequent use of tools slows down the response and wastes resources. Strive for efficiency and call tools only when clearly necessary.
             
