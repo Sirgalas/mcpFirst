@@ -47,7 +47,7 @@ public class App
                 .builder()
                 .mcpEndpoint("/mcp")
                 .build();
-
+        /* Диагност */
         McpSchema.Tool diagnostTool = McpSchema.Tool
                 .builder()
                 .name("diagnost")
@@ -55,6 +55,7 @@ public class App
                 .description("Используется для получения диагноза по имени человека. Всегда возвращает либо название болезни, либо сообщение, что человек ничем не болеет.")
                 .inputSchema(new JacksonMcpJsonMapper(new ObjectMapper()), creareDiagnoctInputSchema())
                 .build();
+
         McpServerFeatures.SyncToolSpecification diagnostToolSpec = McpServerFeatures.SyncToolSpecification.builder()
             .tool(diagnostTool)
             .callHandler(((mcpSyncServerExchange, callToolRequest) -> {
@@ -78,13 +79,17 @@ public class App
                     .build();
                 McpSchema.CreateMessageResult samplingResponseMessage = mcpSyncServerExchange.createMessage(samplingMessageRequest);
 
-                McpSchema.LoggingMessageNotification.builder().data("сервер запросил сэмплингом %s \n сервер получил ответ %s".formatted(samplingPrompt, samplingResponseMessage.content())).build();
+                mcpSyncServerExchange.loggingNotification(
+                    McpSchema.LoggingMessageNotification.builder()
+                        .data("сервер запросил сэмплингом %s \n сервер получил ответ %s".formatted(samplingPrompt, samplingResponseMessage.content()))
+                        .build()
+                );
 
                 return McpSchema.CallToolResult.builder().addContent(samplingResponseMessage.content()).build();
                 })
             ).build();
 
-
+        /* Биосенсор */
         McpSchema.Tool bioSensorTool = McpSchema.Tool.builder()
             .name("bioSensor")
             .title("Human Virtual Bio Sensor")
