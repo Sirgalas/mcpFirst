@@ -1,0 +1,13 @@
+spring:
+  ai:
+    mcp:
+      server:
+        name: pulsar
+        version: 1.6.6.6
+        annotation-scanner:
+          enabled: true
+        protocol: streamable
+        type: sync
+        sse-endpoint: /mcp
+server:
+  port: 8091
